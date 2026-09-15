@@ -337,6 +337,9 @@ main{padding-left:var(--rail)}
   margin-top:16px;padding-left:2px;
 }
 .hero__line{width:76px;height:2px;background:var(--acc);margin:24px 0 22px}
+/* 背景是照片，文字下方明暗不可控 —— 一层暗色外发光保证任何位置都可读 */
+.hero__sub,.hero__term,.hero__tag{text-shadow:0 2px 16px rgba(4,8,10,.9), 0 0 4px rgba(4,8,10,.6)}
+
 .hero__term{
   font-family:var(--f-mono);font-size:.8rem;line-height:2;color:var(--ink-2);
   min-height:10em;border-left:1px solid var(--line-2);padding-left:16px;margin-bottom:28px;
@@ -514,6 +517,13 @@ main{padding-left:var(--rail)}
 .proj__glyph{font-size:1.7rem;line-height:1;color:var(--acc);opacity:.9}
 .proj__name{font-family:var(--f-display);font-size:1.28rem;letter-spacing:.04em;word-break:break-word}
 .proj__cn{font-family:var(--f-mono);font-size:.66rem;letter-spacing:.24em;color:var(--acc);margin-top:4px}
+.proj__role{
+  align-self:flex-start;   /* 卡片内层是 flex column，不加这行会被拉满整行 */
+  display:inline-block;margin-top:11px;
+  font-family:var(--f-mono);font-size:.6rem;letter-spacing:.12em;
+  color:var(--acc);border:1px solid var(--line-2);padding:3px 10px;
+}
+.proj__role:empty{display:none}
 .proj__tag{font-size:.9rem;color:var(--ink-2);margin:14px 0 12px;line-height:1.8}
 .proj__desc{font-size:.86rem;color:var(--ink-3);line-height:1.9;margin-bottom:16px}
 .proj__hl{display:flex;flex-direction:column;gap:7px;margin-bottom:18px;flex:1}
@@ -724,6 +734,19 @@ main{padding-left:var(--rail)}
 }
 @media (max-width:880px){
   :root{--rail:0px}
+  /* 竖屏窄画幅下 cover 会把 16:9 的画面左右狠裁。
+     object-position 的 X 越大，看到的是画面越靠右的部分，人物在屏幕上越靠左。
+     桌面 50% 够用；手机若仍用 50%，她的脸会落在 93% 处被右边缘切掉。
+     60% 让她完整入画且不压住左侧文字列。 */
+  .bgv__media{object-position:60% 38%}
+  /* 人物往中间挪之后，副标题会压在她头发的高光上。竖屏没有横向空间做左右分栏，
+     只能把遮罩往右铺一档 —— 比他档轻，保住脸的可见度。 */
+  .veil{
+    background:
+      linear-gradient(103deg, var(--veil-x) 0%, var(--veil) 46%, rgba(4,8,10,.5) 76%, rgba(4,8,10,.14) 100%),
+      linear-gradient(0deg, var(--veil-x) 0%, transparent 44%),
+      linear-gradient(180deg, rgba(4,8,10,.5) 0%, transparent 26%);
+  }
   .rail{display:none}
   main{padding-left:0}
   .wrap{width:calc(100% - 40px)}

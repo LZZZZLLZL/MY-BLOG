@@ -397,6 +397,7 @@
         '<span class="proj__glyph">' + esc(p.glyph || "◈") + "</span></div>" +
         '<h3 class="proj__name">' + esc(p.name) + "</h3>" +
         '<div class="proj__cn">' + esc(p.cn || "") + "</div>" +
+        (p.role ? '<div class="proj__role">' + esc(p.role) + "</div>" : "") +
         '<p class="proj__tag">' + esc(p.tagline) + "</p>" +
         '<p class="proj__desc">' + esc(p.desc) + "</p>" +
         '<ul class="proj__hl">' + (p.highlights || []).map(function (h) { return "<li>" + esc(h) + "</li>"; }).join("") + "</ul>" +
@@ -412,7 +413,7 @@
     if (st) {
       st.innerHTML = (S.stats || []).map(function (s) {
         return '<div class="svc-stat cell rv"><b data-count="' + esc(s.v) + '">' + esc(s.v) + "</b>" +
-          "<u>" + esc(s.u || "&nbsp;") + "</u><span>" + esc(s.k) + "</span></div>";
+          "<u>" + (s.u ? esc(s.u) : "\u00A0") + "</u><span>" + esc(s.k) + "</span></div>";
       }).join("");
       whenVisible(st, function () {
         if (reduced) return;
@@ -444,6 +445,8 @@
     }
     var intro = $("#svc-intro");
     if (intro) intro.textContent = S.intro || "";
+    var hrs = $("#svc-hours");
+    if (hrs) hrs.textContent = S.hours || "";
     var org = $("#svc-org");
     if (org) org.innerHTML = esc(S.org || "") + ' <em style="font-style:normal;color:var(--acc)">· ' + esc(S.role || "") + "</em>";
   }
@@ -523,13 +526,6 @@
   }
 
   /* ---------------- 文章详情页 ---------------- */
-  var SEED = {
-    "22408-day100": [
-      { name: "阿May", text: "同考 22408，数学二真的要把基础打牢，一起加油！", time: "2026-09-11 08:12" },
-      { name: "老陈", text: "广大的计算机技术这两年挺热门的，加油冲。", time: "2026-09-11 14:40" }
-    ]
-  };
-
   function initPost() {
     var host = $("#article");
     if (!host) return;
@@ -590,7 +586,7 @@
     function load() {
       var saved = [];
       try { saved = JSON.parse(localStorage.getItem(KEY) || "[]"); } catch (e) {}
-      return saved.concat(SEED[pid] || []);
+      return saved;
     }
     function render() {
       var items = load();
