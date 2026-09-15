@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-theme="dark">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>RECORD · LZL</title>
+<meta name="description" content="LZL 的日志正文。">
+<meta name="theme-color" content="#04080a">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' fill='%2304080a'/%3E%3Ctext x='16' y='22' font-family='monospace' font-size='13' font-weight='700' fill='%237BE5B4' text-anchor='middle'%3ELZ%3C/text%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
+<link rel="stylesheet" href="assets/css/style.css">
+</head>
+<body>
+
+<div class="bgv"><img class="bgv__media" src="assets/img/poster.webp" alt=""></div>
+<div class="veil"></div>
+<div class="scrim"></div>
+<div class="fx"></div>
+<div class="grain"></div>
+<div class="sweep"></div>
+<div class="scroll-line" id="scroll-line"></div>
+
+<nav class="toc" id="toc" aria-label="文章目录"></nav>
+
+<nav class="top">
+  <a class="brand" href="index.html">
+    <span class="brand__mark">LZ</span>
+    <span><span class="brand__t">LZL</span><span class="brand__s">PERSONAL TERMINAL</span></span>
+  </a>
+  <div class="top__nav" id="nav">
+    <a class="top__link" href="index.html#profile">档案</a>
+    <a class="top__link" href="index.html#mission">任务</a>
+    <a class="top__link" href="index.html#projects">项目</a>
+    <a class="top__link" href="index.html#service">运维</a>
+    <a class="top__link" href="posts.html">日志</a>
+    <a class="top__link" href="index.html#contact">联络</a>
+  </div>
+  <div class="top__tools">
+    <button class="tbtn" data-theme-toggle aria-label="切换主题"></button>
+    <button class="tbtn burger" id="burger" aria-label="菜单">
+      <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 6h18M3 12h18M3 18h18"/></svg>
+    </button>
+  </div>
+</nav>
+
+<main>
+  <section class="page-head" style="padding:126px 0 26px">
+    <div class="wrap">
+      <a class="page-head__back" href="posts.html">← BACK TO LOG</a>
+    </div>
+  </section>
+
+  <section style="padding:0 0 88px">
+    <div class="wrap">
+      <article class="article" id="article"></article>
+      <div style="max-width:880px;margin-inline:auto">
+        <div class="pager" id="pager"></div>
+
+        <section class="comments cell" id="comments">
+          <div class="caps" style="font-size:.66rem;color:var(--acc);margin-bottom:18px">
+            // COMMENTS · <span id="cmt-n">0</span>
+          </div>
+          <form class="form" id="cmt-form" novalidate>
+            <input class="fld" id="c-name" maxlength="20" placeholder="你的名字（留空则为「匿名旅人」）">
+            <textarea class="fld" id="c-text" rows="4" placeholder="说点什么吧…" required></textarea>
+            <div style="display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+              <button class="btn btn--p" type="submit">发送</button>
+              <small style="color:var(--ink-3);font-size:.64rem;font-family:var(--f-mono);letter-spacing:.1em">留言保存在你的浏览器本地</small>
+            </div>
+          </form>
+          <div id="cmt-list"></div>
+        </section>
+      </div>
+    </div>
+  </section>
+
+  <footer class="foot">
+    <div class="wrap foot__row">
+      <div class="brand">
+        <span class="brand__mark">LZ</span>
+        <span><span class="brand__t" style="font-size:1rem">LZL</span><span class="brand__s">PERSONAL TERMINAL</span></span>
+      </div>
+      <div class="foot__t" id="foot-note"></div>
+      <div class="foot__t">© <span id="year">2026</span> · BUILT WITH VANILLA JS</div>
+    </div>
+  </footer>
+</main>
+
+<button class="totop" aria-label="回到顶部">
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
+</button>
+
+<script src="assets/js/data.js"></script>
+<script src="assets/js/markdown.js"></script>
+<script src="assets/js/app.js"></script>
+</body>
+</html>
