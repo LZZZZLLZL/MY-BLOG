@@ -1222,6 +1222,27 @@ body.is-deck .scrim{display:none}   /* 没有文档滚动，暗纱交给每个�
   .foot__meta{font-size:.55rem}
 }
 
+/* ============ 25d. 联络页（最后一页）：内容放不下时的兜底 ============
+   桌面靠 .pane--contact 的 flex 把页脚钉在屏底、内容垂直居中，前提是内容比一屏矮。
+   一旦放不下（手机竖屏、iPad / 小窗横屏），.contact 的 min-height:auto 会把它撑到内容
+   的自然高度，顶破 .wrap 并溢出；.foot 是它后面的兄弟，于是盖在溢出的内容上 ——
+   表现就是「底部几个链接被页脚压住、页脚像跑到内容中间去了」。
+   两层处理：
+   ① 任何宽度下 .wrap 都能自己滚（内容装得下时不出现滚动条，桌面观感不变），
+      这样内容永远溢不到页脚上；
+   ② 手机上放弃「页脚压底」，改成和其它页一致的正常纵向流 —— 一屏全给内容，
+      底部让位交给 .pane 的 padding，省得一个 200px 高的页脚钉在手机屏底。 */
+.pane--contact > .wrap{overflow-y:auto;overscroll-behavior:contain;scrollbar-width:none}
+.pane--contact > .wrap::-webkit-scrollbar{width:0}
+
+@media (max-width:880px){
+  .pane.pane--contact{display:block;padding-bottom:calc(var(--bar-h) + 14px)}
+  .pane--contact > .wrap{display:block;flex:none;min-height:0;overflow:visible}
+  .pane--contact .contact{flex:none}
+  /* 底部让位改由 .pane 的 padding 负责，页脚不必再自己垫一层，避免重复留白 */
+  .pane--contact .foot{padding-bottom:0}
+}
+
 /* ---------- 21. 偏好 ---------- */
 @media (prefers-reduced-motion: reduce){
   *,*::before,*::after{animation-duration:.01ms !important;animation-iteration-count:1 !important;transition-duration:.01ms !important}
