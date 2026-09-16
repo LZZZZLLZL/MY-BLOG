@@ -35,6 +35,16 @@
   }
   function params() { try { return new URLSearchParams(location.search); } catch (e) { return new URLSearchParams(""); } }
 
+  /* ---------------- 翻页引擎（首页） ---------------- */
+  var PAGES = {
+    isDeck: false, panes: [], idx: 0, locked: false, subject: -1, pt: null, ptSheet: null,
+    indexOf: function (id) {
+      for (var i = 0; i < this.panes.length; i++) if (this.panes[i].id === id) return i;
+      return -1;
+    },
+    go: function (i) { if (this._go) this._go(i); }
+  };
+
   /* ---------------- 主题 ---------------- */
   var TKEY = "lzl-theme";
   function setTheme(t) {
@@ -146,52 +156,165 @@
   }
 
   /* ---------------- 顶栏 / 导轨 / 滚动守望 ---------------- */
+  /* 翻页引擎与导航共用：切换所有「当前页」相关的 UI */
+  function syncChrome(idx) {
+    var panes = PAGES.panes;
+    var rail = $("#rail-dots"), noEl = $("#rail-no");
+    if (rail) $$(".rail__dot", rail).forEach(function (d, i) { d.classList.toggle("is-on", i === idx); });
+    $$(".top__link").forEach(function (a) {
+      a.classList.toggle("is-on", panes[idx] && a.getAttribute("data-nav") === panes[idx].id);
+    });
+    if (noEl) noEl.innerHTML = "<b>" + String(idx).padStart(2, "0") + "</b> / " +
+      String(Math.max(0, panes.length - 1)).padStart(2, "0");
+    var bi = $("#bar-i"); if (bi) bi.textContent = String(idx + 1).padStart(2, "0");
+    var lbl = $("#pane-label"); if (lbl) lbl.textContent = (panes[idx] && panes[idx].dataset.label) || "";
+    var pv = $("#prev"), nx = $("#next");
+    if (pv) pv.disabled = idx <= 0;
+    if (nx) nx.disabled = idx >= panes.length - 1;
+    var line = $("#scroll-line");
+    if (line && panes.length > 1) line.style.width = ((idx + 1) / panes.length * 100) + "%";
+  }
+
+  /* ---------------- 横向翻页 ---------------- */
+  function initDeck() {
+    var stage = $("#stage"), deck = $("#deck");
+    if (!stage || !deck) return;
+    var panes = $$(".pane", deck);
+    if (panes.length < 2) return;
+
+    PAGES.isDeck = true;
+    PAGES.panes = panes;
+
+    function apply() {
+      var idx = PAGES.idx;
+      panes.forEach(function (p, k) {
+        var d = k - idx;
+        p.style.transform = "translate3d(" + (d * 100) + "%,0,0)";
+        p.classList.toggle("is-far", Math.abs(d) > 1);
+        p.setAttribute("aria-hidden", d === 0 ? "false" : "true");
+      });
+    }
+
+    function go(i, silent) {
+      if (typeof i !== "number" || isNaN(i)) return;
+      i = Math.max(0, Math.min(panes.length - 1, i));
+      if (i === PAGES.idx && !silent) return;
+      var dir = i > PAGES.idx ? 1 : -1;
+      PAGES.idx = i;
+      apply();
+      syncChrome(i);
+      if (!silent && !reduced) {
+        var wp = $("#wipe");
+        if (wp) {
+          wp.classList.remove("is-go");
+          void wp.offsetWidth;
+          wp.style.transformOrigin = dir > 0 ? "left center" : "right center";
+          wp.classList.add("is-go");
+        }
+      }
+      PAGES.locked = true;
+      setTimeout(function () { PAGES.locked = false; }, reduced ? 80 : 900);
+      if (history.replaceState) history.replaceState(null, "", "#" + panes[i].id);
+      panes[i].scrollTop = 0;
+      reveal(panes[i]);
+      // 到位后再填一次环，让进度条是「翻到这页才长出来」
+      setTimeout(function () { fillRings(panes[i]); }, reduced ? 0 : 380);
+    }
+    PAGES._go = go;
+
+    // 初始页：优先跟随 hash
+    var start = PAGES.indexOf((location.hash || "").replace("#", ""));
+    PAGES.idx = start >= 0 ? start : 0;
+    apply();
+    syncChrome(PAGES.idx);
+    reveal(panes[PAGES.idx]);
+    var bn = $("#bar-n"); if (bn) bn.textContent = String(panes.length).padStart(2, "0");
+
+    // 滚轮 / 触控板：面板内部还能滚就先滚，滚到底才翻页
+    var acc = 0, accT = 0;
+    stage.addEventListener("wheel", function (e) {
+      var pane = panes[PAGES.idx];
+      var atTop = pane.scrollTop <= 1;
+      var atBottom = pane.scrollTop + pane.clientHeight >= pane.scrollHeight - 2;
+      var dy = e.deltaY, dx = e.deltaX;
+      if ((dy > 0 && !atBottom) || (dy < 0 && !atTop)) { acc = 0; return; }
+      e.preventDefault();
+      if (PAGES.locked) return;
+      var d = Math.abs(dx) > Math.abs(dy) ? dx : dy;
+      var now = Date.now();
+      if (now - accT > 420) acc = 0;
+      accT = now; acc += d;
+      if (Math.abs(acc) > 55) { go(PAGES.idx + (acc > 0 ? 1 : -1)); acc = 0; }
+    }, { passive: false });
+
+    // 键盘
+    window.addEventListener("keydown", function (e) {
+      if (SHEET.open) return;   // 弹层开着时方向键交给弹层自己滚
+      if (/^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) return;
+      var k = e.key;
+      if (k === "ArrowRight" || k === "PageDown" || k === " ") { e.preventDefault(); go(PAGES.idx + 1); }
+      else if (k === "ArrowLeft" || k === "PageUp") { e.preventDefault(); go(PAGES.idx - 1); }
+      else if (k === "Home") { e.preventDefault(); go(0); }
+      else if (k === "End") { e.preventDefault(); go(panes.length - 1); }
+    });
+
+    // 触摸横滑
+    var tx = 0, ty = 0, tt = 0;
+    stage.addEventListener("touchstart", function (e) {
+      var t0 = e.changedTouches[0]; tx = t0.clientX; ty = t0.clientY; tt = Date.now();
+    }, { passive: true });
+    stage.addEventListener("touchend", function (e) {
+      var t0 = e.changedTouches[0];
+      var dx = t0.clientX - tx, dy = t0.clientY - ty;
+      if (Date.now() - tt > 700) return;
+      if (Math.abs(dx) > 55 && Math.abs(dx) > Math.abs(dy) * 1.4) go(PAGES.idx + (dx < 0 ? 1 : -1));
+    }, { passive: true });
+
+    var back = $("#back-mission");
+    if (back) back.addEventListener("click", function () { go(PAGES.indexOf("pane-mission")); });
+
+    var pv = $("#prev"), nx = $("#next");
+    if (pv) pv.addEventListener("click", function () { go(PAGES.idx - 1); });
+    if (nx) nx.addEventListener("click", function () { go(PAGES.idx + 1); });
+
+    window.addEventListener("hashchange", function () {
+      var k = PAGES.indexOf((location.hash || "").replace("#", ""));
+      if (k >= 0) go(k);
+    });
+  }
+
   function initNav() {
     var top = $(".top"), nav = $("#nav"), burger = $("#burger");
     if (burger && nav) {
       burger.addEventListener("click", function () { nav.classList.toggle("is-open"); });
-      $$(".top__link", nav).forEach(function (a) {
-        a.addEventListener("click", function () { nav.classList.remove("is-open"); });
-      });
     }
-    var stuck = function () { if (top) top.classList.toggle("is-stuck", window.scrollY > 20); };
+    var stuck = function () { if (top) top.classList.toggle("is-stuck", PAGES.isDeck || window.scrollY > 20); };
     stuck(); window.addEventListener("scroll", stuck, { passive: true });
 
-    // 导轨
+    // 导轨：有翻页就用面板，没有就退回文档区段
     var rail = $("#rail-dots");
-    var secs = $$("[data-sec]");
+    var secs = PAGES.isDeck ? PAGES.panes : $$("[data-sec]");
     if (rail && secs.length) {
       rail.innerHTML = secs.map(function (s, i) {
         return '<a class="rail__dot" href="#' + s.id + '" data-i="' + i + '" aria-label="' + (s.dataset.label || s.id) + '"><i></i></a>';
       }).join("");
     }
 
-    // 当前区段序号
-    var noEl = $("#rail-no");
-    function setActive(idx) {
-      if (rail) $$(".rail__dot", rail).forEach(function (d, i) { d.classList.toggle("is-on", i === idx); });
-      $$(".top__link").forEach(function (a) {
-        var t = a.getAttribute("href");
-        a.classList.toggle("is-on", secs[idx] && t === "#" + secs[idx].id);
-      });
-      if (noEl) noEl.innerHTML = "<b>" + String(idx).padStart(2, "0") + "</b> / " + String(Math.max(0, secs.length - 1)).padStart(2, "0");
-    }
-    if (secs.length && "IntersectionObserver" in window) {
-      var cur = 0;
-      var ob = new IntersectionObserver(function (ents) {
-        ents.forEach(function (en) {
-          if (!en.isIntersecting) return;
-          var i = secs.indexOf(en.target);
-          if (i >= 0 && i !== cur) { cur = i; setActive(i); }
-        });
-      }, { rootMargin: "-45% 0px -45% 0px" });
-      secs.forEach(function (s) { ob.observe(s); });
-      setActive(0);
-    }
+    // 任何带 data-nav / 指向面板 hash 的链接，都交给翻页引擎
+    document.addEventListener("click", function (e) {
+      var a = e.target.closest ? e.target.closest("[data-nav], a[href^='#pane-']") : null;
+      if (!a || !PAGES.isDeck) return;
+      var id = a.getAttribute("data-nav") || (a.getAttribute("href") || "").replace("#", "");
+      var k = PAGES.indexOf(id);
+      if (k < 0) return;
+      e.preventDefault();
+      PAGES.go(k);
+      if (nav) nav.classList.remove("is-open");
+    });
 
-    // 顶部进度线
+    // 顶栏进度线（非翻页页面的文档滚动）
     var line = $("#scroll-line");
-    if (line) {
+    if (line && !PAGES.isDeck) {
       var tick = false;
       var upd = function () {
         var h = document.documentElement.scrollHeight - window.innerHeight;
@@ -327,34 +450,99 @@
     if (b) whenVisible(b, function () { setTimeout(function () { b.style.width = pct + "%"; }, 120); });
   }
 
-  function renderSubjects() {
-    var box = $("#subjects");
+  /* ---------------- 环形进度 ---------------- */
+  function ringSVG(pct, cls) {
+    /* viewBox 固定 100×100，实际像素尺寸完全由 CSS 的 .ring--* 决定。
+       之前这里写死了像素值（104/172/42），后来 CSS 尺寸改了而这里没跟着改，
+       SVG 就溢出容器并靠左对齐，圆环圆心和中间的数字差了 9px。别再写死。 */
+    var V = 100;
+    var stroke = cls === "ring--lg" ? 5 : cls === "ring--xs" ? 10 : 8;
+    var r = (V - stroke) / 2;
+    var c = 2 * Math.PI * r;
+    var half = V / 2;
+    return '<div class="ring ' + cls + '">' +
+      '<svg viewBox="0 0 ' + V + " " + V + '" preserveAspectRatio="xMidYMid meet" aria-hidden="true">' +
+        '<circle class="ring-bg" cx="' + half + '" cy="' + half + '" r="' + r.toFixed(1) + '" stroke-width="' + stroke + '"/>' +
+        '<circle class="ring-fg" cx="' + half + '" cy="' + half + '" r="' + r.toFixed(1) + '" stroke-width="' + stroke + '"' +
+          ' stroke-dasharray="' + c.toFixed(1) + '" stroke-dashoffset="' + c.toFixed(1) + '"' +
+          ' data-c="' + c.toFixed(1) + '" data-p="' + pct + '"/>' +
+      "</svg>" +
+      '<span class="ring__val">' + pct + "%</span>" +
+    "</div>";
+  }
+  /* 让环从 0 转到目标值 */
+  function fillRings(root) {
+    $$(".ring-fg", root).forEach(function (c, k) {
+      var full = parseFloat(c.getAttribute("data-c"));
+      var pct = parseFloat(c.getAttribute("data-p")) || 0;
+      var set = function () { c.style.strokeDashoffset = (full * (1 - pct / 100)).toFixed(1); };
+      if (reduced) { set(); return; }
+      setTimeout(set, Math.min(k, 12) * 70);
+    });
+  }
+
+  function renderRings() {
+    var box = $("#rings");
     if (!box) return;
     var subs = (window.MISSION || {}).subjects || [];
-    box.innerHTML = subs.map(function (s) {
-      var pct = subjectPct(s);
-      var mods = s.modules || [];
-      var body = mods.length
-        ? '<ul class="mods">' + mods.map(function (m) {
-            return '<li class="mod' + (m.p > 0 ? " is-on" : "") + '">' +
-              '<span class="mod__n">' + esc(m.name) + "</span>" +
-              '<span class="mod__b"><i data-p="' + m.p + '"></i></span>' +
-              '<span class="mod__p">' + (m.p > 0 ? m.p + "%" : "—") + "</span></li>";
-          }).join("") + "</ul>"
-        : '<div class="subj__foot"><span>' + esc(s.note || "") + "</span></div>";
-      return '<div class="subj cell rv">' +
-        '<div class="subj__top"><span class="subj__code">' + esc(s.code) + "</span>" +
-        '<span class="subj__name">' + esc(s.name) + "</span>" +
-        '<span class="subj__score">' + s.score + " 分</span></div>" +
-        '<div class="subj__bar"><i data-p="' + pct + '"></i></div>' +
-        '<div class="subj__foot"><span>' + (mods.length ? mods.filter(function (m) { return m.p > 0; }).length + " / " + mods.length + " 模块已启动" : "") +
-        "</span><b>" + pct + "%</b></div>" + body + "</div>";
+    box.innerHTML = subs.map(function (s, i) {
+      return '<button class="ringcard rv" type="button" data-i="' + i + '" data-sub="' + esc(s.code) + '">' +
+        '<span class="ringcard__code">' + esc(s.code) + "</span>" +
+        ringSVG(subjectPct(s), "ring--sm") +
+        '<span class="ringcard__name">' + esc(s.name) + "</span>" +
+      "</button>";
     }).join("");
-    whenVisible(box, function () {
-      $$("i[data-p]", box).forEach(function (i, k) {
-        setTimeout(function () { i.style.width = i.getAttribute("data-p") + "%"; }, reduced ? 0 : Math.min(k, 12) * 55);
-      });
+    whenVisible(box, function () { fillRings(box); });
+    $$(".ringcard", box).forEach(function (b) {
+      b.addEventListener("click", function () { selectSubject(+b.getAttribute("data-i"), true); });
     });
+  }
+
+  /* 点开某一科：跑马灯式的展开区 + 粒子文字切到这一科的英文名 */
+  /* 选科：填充进度明细页 + 粒子 morph 成该科英文名；nav=true 时翻到明细页 */
+  function selectSubject(i, nav) {
+    var subs = (window.MISSION || {}).subjects || [];
+    var s = subs[i];
+    if (!s) return;
+    PAGES.subject = i;
+    $$(".ringcard").forEach(function (b, k) { b.classList.toggle("is-on", k === i); });
+
+    var box = $("#ringdetail");
+    if (box) {
+      var mods = s.modules || [];
+      box.innerHTML = '<div class="ringdetail__in">' +
+        "<div>" + ringSVG(subjectPct(s), "ring--lg") + "</div>" +
+        "<div>" +
+          '<div class="rd__title">' + esc(s.name) + "</div>" +
+          '<div class="rd__sub">' + esc(s.code) + " · " + s.score + " 分 · " + esc(s.en || "") + "</div>" +
+          '<div class="rd__mods">' + mods.map(function (m) {
+            return '<div class="rd__mod ' + (m.p > 0 ? "is-on" : "is-off") + '">' +
+              ringSVG(m.p, "ring--xs") +
+              '<span class="rd__modname">' + esc(m.name) + "</span>" +
+              '<span class="rd__modp">' + (m.p > 0 ? m.p + "%" : "—") + "</span></div>";
+          }).join("") + "</div>" +
+          '<div class="rd__note">该科进度 = 各模块按权重加权，改 <code>data.js</code> 里对应模块的 <code>p</code> 即可。</div>' +
+        "</div></div>";
+      fillRings(box);
+    }
+    if (PAGES.ptSheet) PAGES.ptSheet.setText(s.en || s.name);   // 弹层里那条跟着科目走
+    if (nav) openSheet();
+  }
+
+  /* ---------------- 科目英文名 · 粒子文字 ---------------- */
+  /* 任务页那条粒子固定显示科目代码，不随选科变化 */
+  function initParticles() {
+    var cv = $("#pt");
+    if (!cv || !window.ParticleText) return;
+    PAGES.pt = new window.ParticleText(cv, { color: "123,229,180", step: 3, base: 0.9 });
+    PAGES.pt.setText((window.MISSION || {}).examCode || "POSTGRADUATE EXAM");
+  }
+
+  /* 弹层里那条粒子显示当前科目的英文名 */
+  function initSheetParticles() {
+    var cv = $("#pt-sheet");
+    if (!cv || !window.ParticleText) return;
+    PAGES.ptSheet = new window.ParticleText(cv, { color: "123,229,180", step: 3, base: 0.9 });
   }
 
   function renderMilestones() {
@@ -389,9 +577,10 @@
   }
 
   function renderProjects() {
-    var box = $("#projects");
-    if (!box) return;
-    box.innerHTML = (window.PROJECTS || []).map(function (p) {
+    /* 渲染进所有 data-projects 容器（当前只有「03 项目」页一处） */
+    var boxes = $$("[data-projects]");
+    if (!boxes.length) return;
+    var html = (window.PROJECTS || []).map(function (p) {
       return '<article class="proj rv"><div class="panel"><div class="panel__in">' +
         '<div class="proj__top"><span class="proj__idx">' + esc(p.index) + "</span>" +
         '<span class="proj__glyph">' + esc(p.glyph || "◈") + "</span></div>" +
@@ -405,6 +594,7 @@
         '<a class="proj__link" href="' + esc(p.url) + '" target="_blank" rel="noopener">View on GitHub <span>→</span></a>' +
         "</div></div></article>";
     }).join("");
+    boxes.forEach(function (b) { b.innerHTML = html; });
   }
 
   function renderService() {
@@ -460,7 +650,7 @@
       '<span class="log__go">READ ' + readTime(p) + " MIN →</span></a>";
   }
   function renderLog() {
-    var box = $("#log");
+    var box = $("#log-list");
     if (box) box.innerHTML = POSTS.slice(0, 5).map(logHTML).join("");
   }
 
@@ -617,6 +807,70 @@
     render();
   }
 
+  /* ---------------- 科目详情全屏层 ---------------- */
+  var SHEET = { el: null, open: false };
+  function openSheet() {
+    if (!SHEET.el) return;
+    SHEET.el.classList.add("is-open");
+    SHEET.el.setAttribute("aria-hidden", "false");
+    SHEET.open = true;
+    var sc = $("#sheet-scroll"); if (sc) sc.scrollTop = 0;
+    reveal(SHEET.el);
+  }
+  function closeSheet() {
+    if (!SHEET.el) return;
+    SHEET.el.classList.remove("is-open");
+    SHEET.el.setAttribute("aria-hidden", "true");
+    SHEET.open = false;
+  }
+  function initSheet() {
+    SHEET.el = $("#sheet");
+    if (!SHEET.el) return;
+    ["#sheet-close", "#sheet-close2"].forEach(function (sel) {
+      var b = $(sel); if (b) b.addEventListener("click", closeSheet);
+    });
+    // 只有直接点到遮罩层才关，点内容不关
+    SHEET.el.addEventListener("click", function (e) { if (e.target === SHEET.el) closeSheet(); });
+    window.addEventListener("keydown", function (e) { if (e.key === "Escape" && SHEET.open) closeSheet(); });
+
+    // 弹层里滚到底还继续往下滚 = 收起弹层，翻到「03 项目」页
+    // （弹层不在 .stage 里，所以这里的滚轮不会触发翻页引擎，得自己接）
+    var sc = $("#sheet-scroll");
+    if (!sc) return;
+    var acc = 0, accT = 0;
+    function leaveTo(nextId) {
+      var k = PAGES.indexOf(nextId);
+      closeSheet();
+      if (k >= 0) PAGES.go(k);
+      acc = 0;
+    }
+    sc.addEventListener("wheel", function (e) {
+      if (!SHEET.open) return;
+      var atTop = sc.scrollTop <= 1;
+      var atBottom = sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2;
+      // 弹层内容自己能滚就先让它滚
+      if ((e.deltaY > 0 && !atBottom) || (e.deltaY < 0 && !atTop)) { acc = 0; return; }
+      if (e.deltaY <= 0) { acc = 0; return; }   // 只有「往下滚」才切走
+      e.preventDefault();
+      var now = Date.now();
+      if (now - accT > 420) acc = 0;
+      accT = now; acc += e.deltaY;
+      if (acc > 55) leaveTo("pane-projects");
+    }, { passive: false });
+
+    var ty = 0, tt = 0;
+    sc.addEventListener("touchstart", function (e) {
+      var t0 = e.changedTouches[0]; ty = t0.clientY; tt = Date.now();
+    }, { passive: true });
+    sc.addEventListener("touchend", function (e) {
+      if (!SHEET.open || Date.now() - tt > 700) return;
+      var t0 = e.changedTouches[0];
+      var dy = t0.clientY - ty;
+      var atBottom = sc.scrollTop + sc.clientHeight >= sc.scrollHeight - 2;
+      if (dy < -55 && atBottom && sc.scrollHeight <= sc.clientHeight + 4) leaveTo("pane-projects");
+    }, { passive: true });
+  }
+
   /* ---------------- 页脚 / 通用 ---------------- */
   function renderFoot() {
     var y = $("#year"); if (y) y.textContent = new Date().getFullYear();
@@ -633,14 +887,19 @@
     initTheme();
     initBG();
     initBoot();
+    initDeck();     // 先建翻页，initNav 才有 PAGES 可用
     initNav();
     initTerm();
     initCountdown();
     renderHeroCard();
     renderProfile();
     renderMissionTop();
-    renderSubjects();
+    renderRings();
     renderOverall();
+    initParticles();       // 任务页：固定 22408
+    initSheetParticles();  // 弹层：跟着科目走
+    initSheet();
+    selectSubject(0);
     renderMilestones();
     renderProjects();
     renderService();

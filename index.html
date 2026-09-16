@@ -12,7 +12,7 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Saira+Condensed:wght@500;600;700&family=Rajdhani:wght@400;500;600;700&family=Noto+Sans+SC:wght@300;400;500;700&family=JetBrains+Mono:wght@400;500&display=swap" media="print" onload="this.media='all'">
 <link rel="stylesheet" href="assets/css/style.css">
 </head>
-<body>
+<body class="is-deck">
 
 <!-- 启动遮罩 -->
 <div class="boot" id="boot">
@@ -28,25 +28,26 @@
 <!-- 背景 -->
 <div class="bgv"><img class="bgv__media" src="assets/img/poster.webp" alt=""></div>
 <div class="veil"></div>
-<div class="scrim"></div>
 <div class="fx"></div>
 <div class="grain"></div>
 <div class="sweep"></div>
+<div class="wipe" id="wipe"></div>
 <div class="scroll-line" id="scroll-line"></div>
 
 <!-- 顶栏 -->
 <nav class="top">
-  <a class="brand" href="index.html">
+  <a class="brand" href="#pane-top" data-nav="pane-top">
     <span class="brand__mark">LZ</span>
     <span><span class="brand__t">LZL</span><span class="brand__s">PERSONAL TERMINAL</span></span>
   </a>
   <div class="top__nav" id="nav">
-    <a class="top__link" href="#profile"><em>01</em>档案</a>
-    <a class="top__link" href="#mission"><em>02</em>任务</a>
-    <a class="top__link" href="#projects"><em>03</em>项目</a>
-    <a class="top__link" href="#service"><em>04</em>运维</a>
-    <a class="top__link" href="#log"><em>05</em>日志</a>
-    <a class="top__link" href="#contact"><em>06</em>联络</a>
+    <a class="top__link" href="#pane-top" data-nav="pane-top"><em>00</em>首页</a>
+    <a class="top__link" href="#pane-profile" data-nav="pane-profile"><em>01</em>档案</a>
+    <a class="top__link" href="#pane-mission" data-nav="pane-mission"><em>02</em>任务</a>
+    <a class="top__link" href="#pane-projects" data-nav="pane-projects"><em>03</em>项目</a>
+    <a class="top__link" href="#pane-service" data-nav="pane-service"><em>04</em>运维</a>
+    <a class="top__link" href="#pane-log" data-nav="pane-log"><em>05</em>日志</a>
+    <a class="top__link" href="#pane-contact" data-nav="pane-contact"><em>06</em>联络</a>
   </div>
   <div class="top__tools">
     <button class="tbtn" data-theme-toggle aria-label="切换主题"></button>
@@ -63,261 +64,315 @@
   <div class="rail__v">LZL · PERSONAL TERMINAL · 2026</div>
 </aside>
 
-<main>
+<!-- 翻页舞台 -->
+<div class="stage" id="stage">
+  <div class="deck" id="deck">
 
-  <!-- 00 首屏 -->
-  <section class="hero" id="top" data-sec data-label="首页">
-    <div class="wrap hero__grid">
-      <div>
-        <div class="hero__tag"><i></i>STATUS · 28 考研备考中 · 22408</div>
-        <h1 class="hero__name">LZL</h1>
-        <div class="hero__line"></div>
-        <div class="hero__sub">COMPUTER SCIENCE · GUANGDONG UNIVERSITY OF EDUCATION</div>
-        <div class="hero__sub" style="margin-top:8px;color:var(--ink-2);letter-spacing:.1em">
-          电脑义务维修中心主任 &nbsp;/&nbsp; 目标：广州大学 · 计算机技术
-        </div>
-        <div class="hero__term" id="term" style="margin-top:26px"></div>
-        <div class="hero__act">
-          <a class="btn btn--p" href="#profile">进入终端 <span>→</span></a>
-          <a class="btn btn--g" href="posts.html">阅读日志</a>
-          <a class="btn btn--g" href="https://github.com/LZZZZLLZL" target="_blank" rel="noopener" data-github>GitHub</a>
-        </div>
-      </div>
-      <aside class="hero__aside">
-        <div class="panel">
-          <div class="panel__in hero__card">
-            <div class="caps" style="font-size:.62rem;color:var(--acc);margin-bottom:10px">// IDENTITY</div>
-            <div id="hero-rows"></div>
+    <!-- 00 首屏 -->
+    <section class="pane pane--hero" id="pane-top" data-sec data-label="首页">
+      <div class="wrap hero__grid hero">
+        <div>
+          <div class="hero__tag"><i></i>STATUS · 28 考研备考中 · 22408</div>
+          <h1 class="hero__name">LZL</h1>
+          <div class="hero__line"></div>
+          <div class="hero__sub">COMPUTER SCIENCE · GUANGDONG UNIVERSITY OF EDUCATION</div>
+          <div class="hero__sub" style="margin-top:8px;color:var(--ink-2);letter-spacing:.1em">
+            电脑义务维修中心主任 &nbsp;/&nbsp; 目标：广州大学 · 计算机技术
+          </div>
+          <div class="hero__term" id="term" style="margin-top:26px"></div>
+          <div class="hero__act">
+            <button class="btn btn--p" type="button" data-nav="pane-profile">进入终端 <span>→</span></button>
+            <a class="btn btn--g" href="posts.html">阅读日志</a>
+            <a class="btn btn--g" href="https://github.com/LZZZZLLZL" target="_blank" rel="noopener" data-github>GitHub</a>
           </div>
         </div>
-      </aside>
-    </div>
-    <div class="hero__scroll">SCROLL<i></i></div>
-  </section>
-
-  <!-- 信息条 -->
-  <div class="ticker"><div class="ticker__track" data-ticker></div></div>
-
-  <!-- 01 档案 -->
-  <section class="sec" id="profile" data-sec data-label="档案">
-    <div class="wrap">
-      <div class="sec-head rv">
-        <span class="sec-head__no">01</span>
-        <div class="sec-head__t">
-          <h2 class="sec-head__cn">个人档案</h2>
-          <div class="sec-head__en">PROFILE</div>
-        </div>
-        <span class="sec-head__rule"></span>
-        <span class="sec-head__meta">// IDENTITY RECORD</span>
+        <aside class="hero__aside">
+          <div class="panel">
+            <div class="panel__in hero__card">
+              <div class="caps" style="font-size:.62rem;color:var(--acc);margin-bottom:10px">// IDENTITY</div>
+              <div id="hero-rows"></div>
+            </div>
+          </div>
+        </aside>
       </div>
+    </section>
 
-      <div class="profile">
-        <div class="idcard panel rv">
+    <!-- 01 档案 -->
+    <section class="pane" id="pane-profile" data-sec data-label="档案">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="sec-head__no">01</span>
+          <div class="sec-head__t">
+            <h2 class="sec-head__cn">个人档案</h2>
+            <div class="sec-head__en">PROFILE</div>
+          </div>
+          <span class="sec-head__rule"></span>
+          <span class="sec-head__meta">// IDENTITY RECORD</span>
+        </div>
+
+        <div class="profile">
+          <div class="idcard panel rv">
+            <div class="panel__in">
+              <div class="idcard__av"><img src="assets/img/avatar.webp" alt="LZL 的头像"></div>
+              <div class="idcard__body">
+                <div class="idcard__name">LZL</div>
+                <div class="idcard__role">CS · GUE · REPAIR CENTER</div>
+                <div class="idcard__meta" id="idcard-meta"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel rv">
+            <div class="panel__in">
+              <div class="rows" id="profile-rows"></div>
+              <div class="bio" id="profile-bio"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- 02 任务 -->
+    <section class="pane" id="pane-mission" data-sec data-label="任务">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="sec-head__no">02</span>
+          <div class="sec-head__t">
+            <h2 class="sec-head__cn">考研作战</h2>
+            <div class="sec-head__en">MISSION · 22408</div>
+          </div>
+          <span class="sec-head__rule"></span>
+          <span class="sec-head__meta">// POSTGRADUATE ENTRANCE EXAM</span>
+        </div>
+
+        <div class="mission-top">
+          <div class="panel rv">
+            <div class="panel__in countdown">
+              <div class="caps" style="font-size:.62rem;color:var(--acc)">// COUNTDOWN TO EXAM</div>
+              <div style="font-family:var(--f-display);font-size:1.35rem;letter-spacing:.06em;margin-top:8px">距离初试</div>
+              <div class="cd">
+                <div class="cd__u"><b id="cd-d">000</b><span>DAYS</span></div>
+                <div class="cd__u"><b id="cd-h">00</b><span>HOURS</span></div>
+                <div class="cd__u"><b id="cd-m">00</b><span>MINUTES</span></div>
+                <div class="cd__u"><b id="cd-s">00</b><span>SECONDS</span></div>
+              </div>
+              <div class="cd__date" id="cd-date"></div>
+              <div class="overall">
+                <div class="overall__top"><span>备考总进度</span><b id="ov-pct">0%</b></div>
+                <div class="overall__bar"><i id="ov-bar"></i></div>
+                <div class="overall__note">四科按分值加权 · 单科进度由其模块自动汇总</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel rv">
+            <div class="panel__in target">
+              <div class="caps" style="font-size:.62rem;color:var(--acc)">// TARGET</div>
+              <div class="target__big" id="target-big" style="margin:10px 0 16px"></div>
+              <div id="target-rows"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- 科目英文名 · 粒子文字 -->
+        <div class="ptbox rv">
+          <div class="ptbox__head">
+            <span>// SUBJECT · PARTICLE FIELD</span>
+            <span>移动鼠标可拨散粒子</span>
+          </div>
+          <div class="ptwrap"><canvas id="pt" aria-hidden="true"></canvas></div>
+        </div>
+
+        <!-- 环形进度（点击翻到进度明细页） -->
+        <div class="rings" id="rings"></div>
+      </div>
+    </section>
+
+    <!-- 03 项目 -->
+    <section class="pane" id="pane-projects" data-sec data-label="项目">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="sec-head__no">03</span>
+          <div class="sec-head__t">
+            <h2 class="sec-head__cn">开源项目</h2>
+            <div class="sec-head__en">PROJECTS</div>
+          </div>
+          <span class="sec-head__rule"></span>
+          <span class="sec-head__meta">// GITHUB · LZZZZLLZL</span>
+        </div>
+        <div class="projects" id="proj-grid" data-projects></div>
+      </div>
+    </section>
+
+    <!-- 04 运维 -->
+    <section class="pane" id="pane-service" data-sec data-label="运维">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="sec-head__no">04</span>
+          <div class="sec-head__t">
+            <h2 class="sec-head__cn">义务维修中心</h2>
+            <div class="sec-head__en">SERVICE</div>
+          </div>
+          <span class="sec-head__rule"></span>
+          <span class="sec-head__meta">// COMPUTER VOLUNTEER REPAIR CENTER</span>
+        </div>
+
+        <div class="svc-stats" id="svc-stats"></div>
+
+        <div class="panel rv" style="margin-bottom:22px">
           <div class="panel__in">
-            <div class="idcard__av"><img src="assets/img/avatar.webp" alt="LZL 的头像"></div>
-            <div class="idcard__body">
-              <div class="idcard__name">LZL</div>
-              <div class="idcard__role">CS · GUE · REPAIR CENTER</div>
-              <div class="idcard__meta" id="idcard-meta"></div>
-            </div>
+            <div class="caps" style="font-size:.62rem;color:var(--acc)" id="svc-org"></div>
+            <p style="font-size:.93rem;color:var(--ink-2);margin-top:12px;line-height:1.95" id="svc-intro"></p>
+            <p style="font-size:.85rem;color:var(--ink-3);margin-top:10px;line-height:1.85" id="svc-hours"></p>
           </div>
         </div>
 
+        <div class="svc-grid" id="svc-grid"></div>
+      </div>
+    </section>
+
+    <!-- 05 日志 -->
+    <section class="pane" id="pane-log" data-sec data-label="日志">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="sec-head__no">05</span>
+          <div class="sec-head__t">
+            <h2 class="sec-head__cn">个人日志</h2>
+            <div class="sec-head__en">LOG</div>
+          </div>
+          <span class="sec-head__rule"></span>
+          <a class="sec-head__meta" href="posts.html" style="color:var(--acc);text-decoration:none">ALL RECORDS →</a>
+        </div>
         <div class="panel rv">
-          <div class="panel__in">
-            <div class="rows" id="profile-rows"></div>
-            <div class="bio" id="profile-bio"></div>
+          <div class="panel__in" style="padding:8px 24px">
+            <div class="log" id="log-list"></div>
           </div>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
 
-  <!-- 02 任务 -->
-  <section class="sec" id="mission" data-sec data-label="任务">
+    <!-- 06 联络 -->
+    <section class="pane pane--contact" id="pane-contact" data-sec data-label="联络">
+      <div class="wrap">
+        <div class="sec-head rv">
+          <span class="sec-head__no">06</span>
+          <div class="sec-head__t">
+            <h2 class="sec-head__cn">联络方式</h2>
+            <div class="sec-head__en">CONTACT</div>
+          </div>
+          <span class="sec-head__rule"></span>
+          <span class="sec-head__meta">// OPEN CHANNEL</span>
+        </div>
+
+        <div class="contact">
+          <div class="panel rv">
+            <div class="panel__in">
+              <div class="ct__big">一起上岸，<br>或者<em>一起修电脑</em>。</div>
+              <p class="ct__p">
+                如果你也在备考 22408、也想聊聊多智能体怎么落地、或者你的笔记本突然开不了机——
+                都欢迎找我。维修中心的问题我都接，考研的问题我们一起想办法。
+              </p>
+              <div class="hero__act" style="margin-top:22px">
+                <a class="btn btn--p" href="https://github.com/LZZZZLLZL" target="_blank" rel="noopener" data-github>GitHub <span>→</span></a>
+                <a class="btn btn--g" href="mailto:lzzzzllzl@example.com">发邮件</a>
+              </div>
+            </div>
+          </div>
+
+          <div class="links">
+            <a class="link cell rv" href="https://github.com/LZZZZLLZL" target="_blank" rel="noopener" data-github>
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11 11 0 0 1 6 0C17.7 4.6 18.7 5 18.7 5c.6 1.6.2 2.8.1 3.1.8.9 1.2 1.9 1.2 3.2 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5Z"/></svg>
+              <span><b>GitHub</b><small>LZZZZLLZL</small></span>
+            </a>
+            <a class="link cell rv" href="posts.html?tag=考研">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20v3H6.5A2.5 2.5 0 0 1 4 20.5Z"/></svg>
+              <span><b>考研日志</b><small>22408 · 备考记录</small></span>
+            </a>
+            <a class="link cell rv" href="posts.html?tag=项目">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m8 6-5 6 5 6M16 6l5 6-5 6"/></svg>
+              <span><b>项目手记</b><small>开发过程与踩坑</small></span>
+            </a>
+            <a class="link cell rv" href="posts.html">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
+              <span><b>全部日志</b><small>ALL RECORDS</small></span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <footer class="foot">
+        <div class="foot__row wrap">
+          <div class="brand foot__brand">
+            <span class="brand__mark">LZ</span>
+            <span class="foot__id">
+              <b>LZL</b>
+              <small>PERSONAL TERMINAL</small>
+            </span>
+          </div>
+          <div class="foot__meta">
+            <span id="foot-note"></span>
+            <span>© <span id="year">2026</span> · BUILT WITH VANILLA JS</span>
+          </div>
+        </div>
+      </footer>
+    </section>
+
+  </div>
+</div>
+
+<!-- 翻页控件 -->
+<div class="pane-nav" id="panenav">
+  <button id="prev" type="button" aria-label="上一页">‹</button>
+  <span id="pane-label">首页</span>
+  <button id="next" type="button" aria-label="下一页">›</button>
+</div>
+
+<!-- 科目详情全屏层：点环形弹出，可以一直往下滚到项目 -->
+<div class="sheet" id="sheet" aria-hidden="true">
+  <div class="sheet__scroll" id="sheet-scroll">
     <div class="wrap">
-      <div class="sec-head rv">
-        <span class="sec-head__no">02</span>
-        <div class="sec-head__t">
-          <h2 class="sec-head__cn">考研作战</h2>
-          <div class="sec-head__en">MISSION · 22408</div>
-        </div>
-        <span class="sec-head__rule"></span>
-        <span class="sec-head__meta">// POSTGRADUATE ENTRANCE EXAM</span>
+      <div class="sheet__bar">
+        <span class="sheet__tag">// SUBJECT DETAIL</span>
+        <button class="sheet__close" id="sheet-close" type="button">关闭 ✕ <em>ESC</em></button>
       </div>
 
-      <div class="mission-top">
-        <div class="panel rv">
-          <div class="panel__in countdown">
-            <div class="caps" style="font-size:.62rem;color:var(--acc)">// COUNTDOWN TO EXAM</div>
-            <div style="font-family:var(--f-display);font-size:1.5rem;letter-spacing:.06em;margin-top:10px">距离初试</div>
-            <div class="cd">
-              <div class="cd__u"><b id="cd-d">000</b><span>DAYS</span></div>
-              <div class="cd__u"><b id="cd-h">00</b><span>HOURS</span></div>
-              <div class="cd__u"><b id="cd-m">00</b><span>MINUTES</span></div>
-              <div class="cd__u"><b id="cd-s">00</b><span>SECONDS</span></div>
-            </div>
-            <div class="cd__date" id="cd-date"></div>
-
-            <div class="overall">
-              <div class="overall__top"><span>备考总进度</span><b id="ov-pct">0%</b></div>
-              <div class="overall__bar"><i id="ov-bar"></i></div>
-              <div class="overall__note">四科按分值加权 · 单科进度由其模块自动汇总</div>
-            </div>
-          </div>
+      <div class="ptbox ptbox--sheet">
+        <div class="ptbox__head">
+          <span>// SUBJECT · PARTICLE FIELD</span>
+          <span>移动鼠标可拨散粒子</span>
         </div>
-
-        <div class="panel rv">
-          <div class="panel__in target">
-            <div class="caps" style="font-size:.62rem;color:var(--acc)">// TARGET</div>
-            <div class="target__big" id="target-big" style="margin:10px 0 16px"></div>
-            <div id="target-rows"></div>
-          </div>
-        </div>
+        <div class="ptwrap"><canvas id="pt-sheet" aria-hidden="true"></canvas></div>
       </div>
 
-      <div class="subjects" id="subjects"></div>
+      <div class="ringdetail" id="ringdetail"></div>
 
-      <div class="panel rv" style="margin-top:26px">
-        <div class="panel__in" style="padding:8px 30px 12px">
+      <div class="sheet__block">
+        <div class="sheet__h"><span>// MILESTONES</span><span>备考阶段</span></div>
+        <div class="panel"><div class="panel__in" style="padding:10px 30px 14px">
           <div class="miles" id="miles" style="margin-top:0"></div>
-        </div>
+        </div></div>
       </div>
+
+      <div class="sheet__foot sheet__foot--next">
+        <span>继续往下滚</span>
+        <span class="sheet__arrow">↓</span>
+        <span>前往「03 项目」</span>
+      </div>
+
     </div>
-  </section>
+  </div>
+</div>
 
-  <!-- 03 项目 -->
-  <section class="sec" id="projects" data-sec data-label="项目">
-    <div class="wrap">
-      <div class="sec-head rv">
-        <span class="sec-head__no">03</span>
-        <div class="sec-head__t">
-          <h2 class="sec-head__cn">开源项目</h2>
-          <div class="sec-head__en">PROJECTS</div>
-        </div>
-        <span class="sec-head__rule"></span>
-        <span class="sec-head__meta">// GITHUB · LZZZZLLZL</span>
-      </div>
-      <div class="projects" id="projects"></div>
-    </div>
-  </section>
-
-  <!-- 04 运维 -->
-  <section class="sec" id="service" data-sec data-label="运维">
-    <div class="wrap">
-      <div class="sec-head rv">
-        <span class="sec-head__no">04</span>
-        <div class="sec-head__t">
-          <h2 class="sec-head__cn">义务维修中心</h2>
-          <div class="sec-head__en">SERVICE</div>
-        </div>
-        <span class="sec-head__rule"></span>
-        <span class="sec-head__meta">// COMPUTER VOLUNTEER REPAIR CENTER</span>
-      </div>
-
-      <div class="svc-stats" id="svc-stats"></div>
-
-      <div class="panel rv" style="margin-bottom:24px">
-        <div class="panel__in">
-          <div class="caps" style="font-size:.62rem;color:var(--acc)" id="svc-org"></div>
-          <p style="font-size:.95rem;color:var(--ink-2);margin-top:12px;line-height:2" id="svc-intro"></p>
-          <p style="font-size:.86rem;color:var(--ink-3);margin-top:10px;line-height:1.9" id="svc-hours"></p>
-        </div>
-      </div>
-
-      <div class="svc-grid" id="svc-grid"></div>
-    </div>
-  </section>
-
-  <!-- 05 日志 -->
-  <section class="sec" id="log" data-sec data-label="日志">
-    <div class="wrap">
-      <div class="sec-head rv">
-        <span class="sec-head__no">05</span>
-        <div class="sec-head__t">
-          <h2 class="sec-head__cn">个人日志</h2>
-          <div class="sec-head__en">LOG</div>
-        </div>
-        <span class="sec-head__rule"></span>
-        <a class="sec-head__meta" href="posts.html" style="color:var(--acc);text-decoration:none">ALL RECORDS →</a>
-      </div>
-      <div class="panel rv">
-        <div class="panel__in" style="padding:8px 24px">
-          <div class="log" id="log"></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 06 联络 -->
-  <section class="sec" id="contact" data-sec data-label="联络">
-    <div class="wrap">
-      <div class="sec-head rv">
-        <span class="sec-head__no">06</span>
-        <div class="sec-head__t">
-          <h2 class="sec-head__cn">联络方式</h2>
-          <div class="sec-head__en">CONTACT</div>
-        </div>
-        <span class="sec-head__rule"></span>
-        <span class="sec-head__meta">// OPEN CHANNEL</span>
-      </div>
-
-      <div class="contact">
-        <div class="panel rv">
-          <div class="panel__in">
-            <div class="ct__big">一起上岸，<br>或者<em>一起修电脑</em>。</div>
-            <p class="ct__p">
-              如果你也在备考 22408、也想聊聊多智能体怎么落地、或者你的笔记本突然开不了机——
-              都欢迎找我。维修中心的问题我都接，考研的问题我们一起想办法。
-            </p>
-            <div class="hero__act" style="margin-top:22px">
-              <a class="btn btn--p" href="https://github.com/LZZZZLLZL" target="_blank" rel="noopener" data-github>GitHub <span>→</span></a>
-              <a class="btn btn--g" href="mailto:lzzzzllzl@example.com">发邮件</a>
-            </div>
-          </div>
-        </div>
-
-        <div class="links">
-          <a class="link cell rv" href="https://github.com/LZZZZLLZL" target="_blank" rel="noopener" data-github>
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M12 .5C5.7.5.5 5.7.5 12c0 5.1 3.3 9.4 7.9 10.9.6.1.8-.2.8-.5v-2c-3.2.7-3.9-1.4-3.9-1.4-.5-1.3-1.3-1.7-1.3-1.7-1.1-.7.1-.7.1-.7 1.2.1 1.8 1.2 1.8 1.2 1 1.8 2.8 1.3 3.5 1 .1-.8.4-1.3.8-1.6-2.6-.3-5.3-1.3-5.3-5.8 0-1.3.5-2.3 1.2-3.2-.1-.3-.5-1.5.1-3.1 0 0 1-.3 3.3 1.2a11 11 0 0 1 6 0C17.7 4.6 18.7 5 18.7 5c.6 1.6.2 2.8.1 3.1.8.9 1.2 1.9 1.2 3.2 0 4.5-2.7 5.5-5.3 5.8.4.4.8 1.1.8 2.2v3.3c0 .3.2.6.8.5 4.6-1.5 7.9-5.8 7.9-10.9C23.5 5.7 18.3.5 12 .5Z"/></svg>
-            <span><b>GitHub</b><small>LZZZZLLZL</small></span>
-          </a>
-          <a class="link cell rv" href="posts.html?tag=考研">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 5.5A2.5 2.5 0 0 1 6.5 3H20v15H6.5A2.5 2.5 0 0 0 4 20.5v-15Z"/><path d="M4 20.5A2.5 2.5 0 0 1 6.5 18H20v3H6.5A2.5 2.5 0 0 1 4 20.5Z"/></svg>
-            <span><b>考研日志</b><small>22408 · 备考记录</small></span>
-          </a>
-          <a class="link cell rv" href="posts.html?tag=项目">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="m8 6-5 6 5 6M16 6l5 6-5 6"/></svg>
-            <span><b>项目手记</b><small>开发过程与踩坑</small></span>
-          </a>
-          <a class="link cell rv" href="posts.html">
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16M4 12h16M4 18h10"/></svg>
-            <span><b>全部日志</b><small>ALL RECORDS</small></span>
-          </a>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <footer class="foot">
-    <div class="wrap foot__row">
-      <div class="brand">
-        <span class="brand__mark">LZ</span>
-        <span><span class="brand__t" style="font-size:1rem">LZL</span><span class="brand__s">PERSONAL TERMINAL</span></span>
-      </div>
-      <div class="foot__t" id="foot-note"></div>
-      <div class="foot__t">© <span id="year">2026</span> · BUILT WITH VANILLA JS</div>
-    </div>
-  </footer>
-
-</main>
-
-<button class="totop" aria-label="回到顶部">
-  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-</button>
+<!-- 底部状态条 -->
+<div class="bar">
+  <div class="bar__pg"><b id="bar-i">01</b> / <span id="bar-n">07</span></div>
+  <div class="bar__sep"></div>
+  <div class="ticker"><div class="ticker__track" data-ticker></div></div>
+</div>
 
 <script src="assets/js/data.js"></script>
 <script src="assets/js/markdown.js"></script>
+<script src="assets/js/particles.js"></script>
 <script src="assets/js/app.js"></script>
 </body>
 </html>
