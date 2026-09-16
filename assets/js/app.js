@@ -78,7 +78,12 @@
   function initBG() {
     var host = $(".bgv");
     if (!host) return;
-    if (reduced || (navigator.connection && navigator.connection.saveData)) return;
+    /* 手机版：wallpaper.mp4 有 3MB，蜂窝网络下既费流量、解码又掉帧，
+       触屏设备和小屏直接用 HTML 里那张 poster 图（.bgv__media 的 <img>），
+       只有桌面鼠标设备才升级成视频。 */
+    var coarse = window.matchMedia("(pointer: coarse)").matches;
+    var smallScreen = window.matchMedia("(max-width: 880px)").matches;
+    if (reduced || coarse || smallScreen || (navigator.connection && navigator.connection.saveData)) return;
 
     var v = document.createElement("video");
     v.className = "bgv__media";

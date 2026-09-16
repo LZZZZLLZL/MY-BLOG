@@ -50,6 +50,12 @@
   --rail:74px;
   --nav-h:66px;   /* 顶栏高度：.pane 的 padding-top 依赖它，缺了整条 padding 会被丢弃 */
   --bar-h:38px;
+
+  /* 安全区兜底：老浏览器 / 无刘海设备恒为 0，下面的 @supports 里再交给 env() */
+  --sat:0px;   /* safe-area-inset-top    */
+  --sab:0px;   /* safe-area-inset-bottom */
+  --sal:0px;   /* safe-area-inset-left   */
+  --sar:0px;   /* safe-area-inset-right  */
 }
 
 /* 白昼模式：白玻璃 + 深绿字，保留同一套几何 */
@@ -73,6 +79,25 @@
   --veil:rgba(238,244,240,.5);
   --veil-x:rgba(238,244,240,.9);
   --dim:.12;
+}
+
+/* ---------- 1b. 安全区（刘海屏 / 底部小白条） ----------
+   HTML 里 viewport-fit=cover 之后页面会铺到屏幕物理边缘，不补内边距的话，
+   顶栏会钻到刘海／状态栏底下、底部状态条会被 Home Indicator 压住。
+   这里把安全区并进 --nav-h / --bar-h：.pane 的 padding、.bar 的高度、
+   .pane-nav 的 bottom 全都引用这两个值，改一处下游自动让位。
+   包在 @supports 里是为了兜底 —— 不认 env() 的浏览器若让 calc() 取到无效
+   token，整条 padding 声明都会被作废，反而比不写更糟。 */
+@supports (padding: env(safe-area-inset-top)){
+  :root{
+    --sat:env(safe-area-inset-top, 0px);
+    --sab:env(safe-area-inset-bottom, 0px);
+    --sal:env(safe-area-inset-left, 0px);
+    --sar:env(safe-area-inset-right, 0px);
+    --nav-h:calc(66px + var(--sat));
+    --bar-h:calc(38px + var(--sab));
+  }
+  .top{padding-left:max(26px, var(--sal));padding-right:max(26px, var(--sar))}
 }
 
 /* ---------- 2. 基础 ---------- */
@@ -205,8 +230,8 @@ ul,ol{margin:0;padding:0}
 
 /* ---------- 5. 顶栏 ---------- */
 .top{
-  position:fixed;top:0;left:0;right:0;z-index:100;height:64px;
-  display:flex;align-items:center;gap:20px;padding:0 26px;
+  position:fixed;top:0;left:0;right:0;z-index:100;height:calc(64px + var(--sat));
+  display:flex;align-items:center;gap:20px;padding:var(--sat) 26px 0;
   transition:background .35s var(--ease), border-color .35s;
   border-bottom:1px solid transparent;
 }
@@ -249,7 +274,7 @@ ul,ol{margin:0;padding:0}
 
 /* 顶部进度线 */
 .scroll-line{
-  position:fixed;top:0;left:0;height:2px;z-index:120;width:0;
+  position:fixed;top:var(--sat);left:0;height:2px;z-index:120;width:0;
   background:linear-gradient(90deg,var(--acc-deep),var(--acc));box-shadow:0 0 12px var(--acc);
   /* 与翻页同一条缓动，切换时是滑过去而不是跳过去 */
   transition:width .95s var(--ease-deck);
@@ -761,7 +786,7 @@ main{padding-left:var(--rail)}
    明日方舟官网那种「一屏一页、左右切」的导航。
    每个 .pane 绝对定位，靠 transform 平移到 (k - idx) * 100%，互不干扰，
    好处是能给非当前页单独做缩放/透明度/视差。 */
-body.is-deck{overflow:hidden}
+body.is-deck{overflow:hidden;overscroll-behavior:none}
 body.is-deck .scrim{display:none}   /* 没有文档滚动，暗纱交给每个面板自己承担 */
 
 .stage{position:fixed;inset:0;overflow:hidden}
@@ -899,7 +924,7 @@ body.is-deck .scrim{display:none}   /* 没有文档滚动，暗纱交给每个�
 /* ============ 23. 底部状态条 ============ */
 .bar{
   position:fixed;left:var(--rail);right:0;bottom:0;z-index:88;height:var(--bar-h);
-  display:flex;align-items:center;gap:16px;padding:0 24px;
+  display:flex;align-items:center;gap:16px;padding:0 24px var(--sab);
   border-top:1px solid var(--line);
   background:color-mix(in srgb, var(--base) 80%, transparent);
   backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);
@@ -940,9 +965,13 @@ body.is-deck .scrim{display:none}   /* 没有文档滚动，暗纱交给每个�
   main{padding-left:0}
   .wrap{width:calc(100% - 40px)}
   .top__nav{
-    position:fixed;top:64px;left:0;right:0;flex-direction:column;align-items:stretch;gap:0;
+    position:fixed;top:calc(64px + var(--sat));left:0;right:0;flex-direction:column;align-items:stretch;gap:0;
     background:color-mix(in srgb,var(--base) 94%,transparent);backdrop-filter:blur(20px);
     border-bottom:1px solid var(--line);padding:10px 20px 18px;
+    /* 横屏 / 小屏时菜单可能比屏幕还高，自己滚，别顶出视口 */
+    max-height:calc(100vh - 64px - var(--sat));
+    max-height:calc(100dvh - 64px - var(--sat));
+    overflow-y:auto;overscroll-behavior:contain;
     transform:translateY(-12px);opacity:0;pointer-events:none;transition:.3s var(--ease);
   }
   .top__nav.is-open{transform:none;opacity:1;pointer-events:auto}
@@ -958,7 +987,7 @@ body.is-deck .scrim{display:none}   /* 没有文档滚动，暗纱交给每个�
   .ring--lg{width:140px;height:140px}
   .ring--lg .ring__val{font-size:2rem}
   .ptwrap{height:104px}
-  .bar{padding:0 16px;gap:12px}
+  .bar{padding:0 16px var(--sab);gap:12px}
   .row{grid-template-columns:1fr;gap:5px}
   .row__n{text-align:left}
   .log__item{grid-template-columns:1fr;gap:8px}
@@ -1089,7 +1118,7 @@ body.is-deck .scrim{display:none}   /* 没有文档滚动，暗纱交给每个�
 .sheet__scroll::-webkit-scrollbar{width:0}
 .sheet.is-open .sheet__scroll{transform:none}
 .sheet__bar{
-  position:sticky;top:0;z-index:3;
+  position:sticky;top:var(--sat);z-index:3;
   display:flex;align-items:center;justify-content:space-between;gap:16px;
   padding:11px 0 9px;margin-bottom:12px;
   /* 用不透明底而不是向下渐隐：渐隐会让滚过的区块标题透出来，糊在栏底 */
@@ -1131,6 +1160,67 @@ body.is-deck .scrim{display:none}   /* 没有文档滚动，暗纱交给每个�
   color:var(--acc);opacity:.85;
 }
 .sheet__arrow{animation:cue 1.9s var(--ease) infinite;font-size:.9rem}
+
+/* ============ 25. 手机版适配 ============
+   断点沿用上面的 1080 / 880 / 560，这一节只补「触屏专属」的那层：
+   手指点得中的尺寸、刘海安全区在横竖屏下的让位、以及小屏的排版收束。
+   全部包在 max-width / pointer 查询里，桌面鼠标设备完全不受影响。 */
+
+/* --- 25a. 触屏点击目标 >= 44px（Apple HIG 与 Material 的下限）--- */
+@media (max-width:880px){
+  /* 顶栏两个图标按钮原来 36px，拇指容易点空 */
+  .tbtn{width:44px;height:44px}
+  .brand__mark{width:36px;height:36px}
+
+  /* 翻页箭头是手机上仅次于横滑的导航方式，原来只有 28x24 */
+  .pane-nav{gap:16px;bottom:calc(var(--bar-h) + 18px)}
+  .pane-nav button{width:48px;height:44px;font-size:1.1rem}
+
+  /* 项目卡的 GitHub 链接原本只有 23.7px 高，几乎点不中 */
+  .proj__link{padding:11px 0}
+  /* 弹层关闭按钮、日志页返回链接、标签筛选 chips */
+  .sheet__close{padding:12px 18px}
+  .page-head__back{padding:12px 0}
+  .chip{display:inline-flex;align-items:center;min-height:44px;padding:0 14px}
+
+  /* 列表页 / 文章页标题区：顶栏在刘海机上高 64+sat，这里跟着让位 */
+  .page-head{padding-top:calc(104px + var(--sat))}
+
+  /* 回顶按钮：避开底部小白条 */
+  .totop{width:48px;height:48px;right:16px;bottom:calc(24px + var(--sab))}
+
+  /* 横屏刘海机：刘海在侧边，正文别钻进去 */
+  .pane{padding-left:calc(var(--rail) + var(--sal));padding-right:var(--sar)}
+  .bar{left:calc(var(--rail) + var(--sal));right:var(--sar)}
+}
+
+/* --- 25b. 手指交互：抹掉双击缩放延迟与点按灰块 --- */
+@media (hover:none) and (pointer:coarse){
+  *{-webkit-tap-highlight-color:transparent}
+  a,button,[role=button],input,textarea,select,.chip,.ringcard,.log__item,.link{touch-action:manipulation}
+}
+
+/* --- 25c. 小屏（<=400px：iPhone SE / 安卓小尺寸） --- */
+@media (max-width:400px){
+  .wrap{width:calc(100% - 32px)}
+  .panel__in{padding:18px 16px}
+  .proj .panel__in{padding:18px 16px 16px}
+
+  /* 首屏：标题别撑破一行，三个按钮改成整行排布，拇指够得着 */
+  .hero__name{font-size:clamp(3.4rem,17vw,4.6rem)}
+  .hero__tag{font-size:.6rem;letter-spacing:.18em;padding:6px 11px;margin-bottom:20px}
+  .hero__sub{font-size:.66rem;letter-spacing:.16em}
+  .hero__act{gap:10px}
+  .hero__act .btn{padding:12px 18px;font-size:.78rem;flex:1 1 auto;justify-content:center}
+
+  .sec-head__cn{font-size:1.1rem}
+  .cd__u{padding:7px 3px}
+  .cd__u b{font-size:1.35rem}
+  .ct__big{font-size:1.8rem}
+  .bar__pg{font-size:.56rem}
+  .ticker__item{font-size:.6rem}
+  .foot__meta{font-size:.55rem}
+}
 
 /* ---------- 21. 偏好 ---------- */
 @media (prefers-reduced-motion: reduce){
